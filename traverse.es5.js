@@ -17,8 +17,12 @@ var this$0 = this;(function(factory ) {
 
 	/* polyfilling missing methods in some current browser implementations */
 
-	var resolve = Promise.resolve.bind(Promise) || (function(arg ) {return new Promise(function(resolve ) {return resolve(arg)})});
-	var asPromise = Promise.cast.bind(Promise) || (function(arg ) {return arg instanceof Promise ? arg : resolve(arg)});
+	var resolve = Promise.resolve.bind ?
+		Promise.resolve.bind(Promise) :
+		(function(arg ) {return new Promise(function(resolve ) {return resolve(arg)})});
+	var asPromise = Promise.cast.bind ?
+		Promise.cast.bind(Promise) :
+		(function(arg ) {return arg instanceof Promise ? arg : resolve(arg)});
 
 	var isObject = function(node ) {return typeof node === 'object' && node !== null};
 	var isSkipped = function(node ) {return node === WhenTraverse.SKIP || node === WhenTraverse.REMOVE};
@@ -34,7 +38,7 @@ var this$0 = this;(function(factory ) {
 					var enter = this._wrapWhen(options.enter);
 					var leave = this._wrapWhen(options.leave);
 
-					this.visit = function(node, key, parentNode)  
+					this.visit = function(node, key, parentNode)
 						{return enter(node, key, parentNode)
 						.then(function(node ) {return this$0.into(node)})
 						.then(function(node ) {return isSkipped(node) ? node : leave(node, key, parentNode)})}
@@ -58,7 +62,7 @@ var this$0 = this;(function(factory ) {
 		}
 
 		WhenTraverse.prototype._wrapWhen = function(func) {var this$0 = this;
-			return func ? (function(node, key, parentNode) 
+			return func ? (function(node, key, parentNode)
 				{return asPromise(func.call(this$0, node, key, parentNode))
 				.then(function(newValue ) {return newValue === undefined ? node : newValue})}
 			) : resolve;
